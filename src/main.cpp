@@ -44,6 +44,11 @@ void read_range_arguments_minimiser(seqan3::argument_parser & parser, range_argu
                                            "position to be ignored, 1 a position considered. Default: ungapped.");
     parser.add_option(se, '\0', "seed", "Define seed.");
 }
+void read_range_arguments_syncmer(seqan3::argument_parser & parser, range_arguments & args)
+{
+    parser.add_option(args.w_min, '\0', "S", "Define the s-mer size for syncmers.");
+    parser.add_option(args.w_min, '\0', "K", "Define the k-mer size for syncmers.");
+}
 
 void parsing(range_arguments & args)
 {

@@ -11,6 +11,11 @@
 #include "modmer_hash.hpp"
 #include "modmer_hash_distance.hpp"
 #include "minstrobe.hpp"
+#include "minstrobe_hash.hpp"
+#include "syncmer.hpp"
+#include "syncmer_hash.hpp"
+#include "opensyncmer.hpp"
+#include "opensyncmer_hash.hpp"
 
 /*! \brief Calculate mean and variance of given list.
  *  \param results The vector from which mean and varaince should be calculated of.
@@ -289,8 +294,14 @@ void do_comparison(std::vector<std::filesystem::path> sequence_files, range_argu
         case modmers: compare(sequence_files, modmer_hash(args.shape,
                                 args.w_size.get(), args.seed_se), "modmer_hash_" + std::to_string(args.k_size) + "_" + std::to_string(args.w_size.get()), args);
                         break;
-        case minstrobe: compare(sequence_files, kmer_hash(args.shape,
-                                args.k_size(), args.seed_se), "minstrobe_" + std::to_string(args.k_size) + "_" +  std::to_string(args.w_min) + "_" +  std::to_string(args.w_max), args);
+        case minstrobe: compare(sequence_files, minstrobe_hash(args.shape,
+                                args.w_min, args.w_max), "minstrobe_" + std::to_string(args.k_size) + "_" +  std::to_string(args.w_min) + "_" +  std::to_string(args.w_max), args);
+                        break;
+        case syncmer: compare(sequence_files, syncmer_hash(args.shape,
+                                args.K, args.S), "syncmer_" + std::to_string(args.k_size) + "_" +  std::to_string(args.K) + "_" +  std::to_string(args.S), args);
+                        break;
+        case opensyncmer: compare(sequence_files, syncmer_hash(args.shape,
+                                args.K, args.S), "opensyncmer_" + std::to_string(args.k_size) + "_" +  std::to_string(args.K) + "_" +  std::to_string(args.S), args);
                         break;
         case strobemer: std::ranges::empty_view<seqan3::detail::empty_type> empty{};
                         if (args.rand & (args.order == 2))

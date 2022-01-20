@@ -8,3 +8,12 @@ add_api_test (minimiser_distance_test.cpp)
 add_api_test (modmer_test.cpp)
 add_api_test (modmer_hash_test.cpp)
 add_api_test (modmer_hash_distance_test.cpp)
+
+add_api_test (minstrobe_test.cpp)
+add_api_test (minstrobe_hash_test.cpp)
+
+add_api_test (syncmer_test.cpp)
+add_api_test (syncmer_hash_test.cpp)
+
+add_api_test (opensyncmer_test.cpp)
+add_api_test (opensyncmer_hash_test.cpp)

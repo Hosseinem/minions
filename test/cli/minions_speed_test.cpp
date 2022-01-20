@@ -40,11 +40,28 @@ TEST_F(cli_test, modmer)
 
 TEST_F(cli_test, minstrobe)
 {
-    cli_test_result result = execute_app("minions speed --method minstrobe -k 19 --w-min 16 --w-max 30", data("example1.fasta"));
+    cli_test_result result = execute_app("minions speed --method minstrobe -k 6 --w-min 3 --w-max 5", data("example1.fasta"));
     EXPECT_EQ(result.exit_code, 0);
     EXPECT_EQ(result.out, std::string{});
     EXPECT_EQ(result.err, std::string{});
 }
+
+TEST_F(cli_test, syncmer)
+{
+    cli_test_result result = execute_app("minions speed --method syncmer --K 3 --S 6", data("example1.fasta"));
+    EXPECT_EQ(result.exit_code, 0);
+    EXPECT_EQ(result.out, std::string{});
+    EXPECT_EQ(result.err, std::string{});
+}
+
+TEST_F(cli_test, opensyncmer)
+{
+    cli_test_result result = execute_app("minions speed --method opensyncmer --K 3 --S 6", data("example1.fasta"));
+    EXPECT_EQ(result.exit_code, 0);
+    EXPECT_EQ(result.out, std::string{});
+    EXPECT_EQ(result.err, std::string{});
+}
+
 
 TEST_F(cli_test, hybridstrobemer)
 {
