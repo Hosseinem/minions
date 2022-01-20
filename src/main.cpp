@@ -19,6 +19,12 @@ void string_to_methods(std::string name, methods & m)
         m = strobemer;
     else if (name == "modmer")
         m = modmers;
+    else if (name == "minstrobe")
+        m = minstrobe;
+    else if (name == "syncmer")
+        m = syncmer;
+    else if (name == "opensyncmer")
+        m = opensyncmer;
 };
 
 void read_range_arguments_strobemers(seqan3::argument_parser & parser, range_arguments & args)
@@ -57,7 +63,7 @@ int coverage(seqan3::argument_parser & parser)
     parser.add_option(args.path_out, 'o', "out", "Directory, where output files should be saved.");
     parser.add_option(args.k_size, 'k', "kmer-size", "Define kmer size.");
     std::string method{};
-    parser.add_option(method, '\0', "method", "Pick your method.", seqan3::option_spec::required, seqan3::value_list_validator{"kmer", "minimiser", "modmer"});
+    parser.add_option(method, '\0', "method", "Pick your method.", seqan3::option_spec::required, seqan3::value_list_validator{"kmer", "minimiser", "modmer", "minstrobe"});
 
     read_range_arguments_minimiser(parser, args);
 
@@ -86,7 +92,7 @@ int speed(seqan3::argument_parser & parser)
     parser.add_option(args.path_out, 'o', "out", "Directory, where output files should be saved.");
     parser.add_option(args.k_size, 'k', "kmer-size", "Define kmer size.");
     std::string method{};
-    parser.add_option(method, '\0', "method", "Pick your method.", seqan3::option_spec::required, seqan3::value_list_validator{"kmer", "minimiser", "modmer", "strobemer"});
+    parser.add_option(method, '\0', "method", "Pick your method.", seqan3::option_spec::required, seqan3::value_list_validator{"kmer", "minimiser", "modmer", "strobemer", "minstrobe"});
 
     read_range_arguments_minimiser(parser, args);
     read_range_arguments_strobemers(parser, args);
