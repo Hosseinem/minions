@@ -31,7 +31,7 @@ struct syncmer_hash_fn
     * \throws std::invalid_argument if the size of the shape is greater than the `mod_used`.
     * \returns               A range of converted elements.
     */
-    constexpr auto operator()(shape const & shape, uint32_t const K, uint32_t const S) const
+    constexpr auto operator()(shape const & shape, uint32_t const K, uint8_t const S) const
     {
         return seqan3::detail::adaptor_from_functor{*this, shape, K, S};
     }
@@ -43,7 +43,7 @@ struct syncmer_hash_fn
     * \throws std::invalid_argument if the size of the shape is greater than the `mod_used`.
     * \returns               A range of converted elements.
     */
-    constexpr auto operator()(shape const & shape, uint32_t const K, uint32_t const S, seed const seed) const
+    constexpr auto operator()(shape const & shape, uint32_t const K, uint8_t const S, seed const seed) const
     {
         return seqan3::detail::adaptor_from_functor{*this, shape, K, S, seed};
     }
@@ -61,7 +61,7 @@ struct syncmer_hash_fn
     constexpr auto operator()(urng_t && urange,
                               shape const & shape,
                               uint32_t const K,
-			      uint32_t const S,
+			       uint8_t const S,
                               seed const seed = seqan3::seed{0x8F3F73B5CF1C9ADE}) const
     {
         static_assert(std::ranges::viewable_range<urng_t>,
@@ -75,11 +75,14 @@ struct syncmer_hash_fn
             throw std::invalid_argument{"The chosen Kmer is not valid. "
                                         "Please choose a value greater than 1."};
 
-        auto forward_strand = std::forward<urng_t>(urange) | seqan3::views::kmer_hash(shape)
+        auto first_hash = std::forward<urng_t>(urange) | seqan3::views::kmer_hash(shape)
+                                                           | std::views::transform([seed] (uint64_t i)
+                                                                                  {return i ^ seed.get();});
+        auto second_hash = std::forward<urng_t>(urange) | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{S}})
                                                            | std::views::transform([seed] (uint64_t i)
                                                                                   {return i ^ seed.get();});
 
-        return seqan3::detail::syncmer_view(forward_strand, S, K);
+        return seqan3::detail::syncmer_view(first_hash, second_hash, S, K);
     }
 };
 
