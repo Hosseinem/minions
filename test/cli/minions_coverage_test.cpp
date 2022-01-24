@@ -46,14 +46,6 @@ TEST_F(cli_test, syncmer)
     EXPECT_EQ(result.err, std::string{});
 }
 
-TEST_F(cli_test, opensyncmer)
-{
-    cli_test_result result = execute_app("minions coverage --method opensyncmer -K 6 -S 3", data("example1.fasta"));
-    EXPECT_EQ(result.exit_code, 0);
-    EXPECT_EQ(result.out, std::string{});
-    EXPECT_EQ(result.err, std::string{});
-}
-
 
 TEST_F(cli_test, modmer)
 {

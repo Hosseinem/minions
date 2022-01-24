@@ -31,9 +31,9 @@ struct syncmer_hash_fn
     * \throws std::invalid_argument if the size of the shape is greater than the `mod_used`.
     * \returns               A range of converted elements.
     */
-    constexpr auto operator()(shape const & shape, uint32_t const K, uint8_t const S) const
+    constexpr auto operator()(uint32_t const K, uint32_t const S) const
     {
-        return seqan3::detail::adaptor_from_functor{*this, shape, K, S};
+        return seqan3::detail::adaptor_from_functor{*this, K, S};
     }
 
     /*!\brief Store the shape, the window size and the seed and return a range adaptor closure object.
@@ -43,9 +43,9 @@ struct syncmer_hash_fn
     * \throws std::invalid_argument if the size of the shape is greater than the `mod_used`.
     * \returns               A range of converted elements.
     */
-    constexpr auto operator()(shape const & shape, uint32_t const K, uint8_t const S, seed const seed) const
+    constexpr auto operator()(uint32_t const K, uint32_t const S, seed const seed) const
     {
-        return seqan3::detail::adaptor_from_functor{*this, shape, K, S, seed};
+        return seqan3::detail::adaptor_from_functor{*this, K, S, seed};
     }
 
     /*!\brief Call the view's constructor with the underlying view, a seqan3::shape and a window size as argument.
@@ -59,9 +59,8 @@ struct syncmer_hash_fn
      */
     template <std::ranges::range urng_t>
     constexpr auto operator()(urng_t && urange,
-                              shape const & shape,
                               uint32_t const K,
-			       uint8_t const S,
+			      uint32_t const S,
                               seed const seed = seqan3::seed{0x8F3F73B5CF1C9ADE}) const
     {
         static_assert(std::ranges::viewable_range<urng_t>,
@@ -75,11 +74,9 @@ struct syncmer_hash_fn
             throw std::invalid_argument{"The chosen Kmer is not valid. "
                                         "Please choose a value greater than 1."};
 
-        auto first_hash = std::forward<urng_t>(urange) | seqan3::views::kmer_hash(shape)
-                                                           | std::views::transform([seed] (uint64_t i)
+        auto first_hash = std::forward<urng_t>(urange) | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{K}}) | std::views::transform([seed] (uint64_t i)
                                                                                   {return i ^ seed.get();});
-        auto second_hash = std::forward<urng_t>(urange) | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{S}})
-                                                           | std::views::transform([seed] (uint64_t i)
+        auto second_hash = std::forward<urng_t>(urange) | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{S}}) | std::views::transform([seed] (uint64_t i)
                                                                                   {return i ^ seed.get();});
 
         return seqan3::detail::syncmer_view(first_hash, second_hash, S, K);
@@ -96,7 +93,6 @@ struct syncmer_hash_fn
  * \tparam urng_t            The type of the range being processed. See below for requirements. [template parameter is
  *                           omitted in pipe notation]
  * \param[in] urange         The range being processed. [parameter is omitted in pipe notation]
- * \param[in] shape          The seqan3::shape that determines how to compute the hash value.
  * \param[in] mod_used       The mod value to use.
  * \param[in] seed           The seed used to skew the hash values. Default: 0x8F3F73B5CF1C9ADE.
  * \returns                  A range of `size_t` where each value is the syncmer of the resp. window.

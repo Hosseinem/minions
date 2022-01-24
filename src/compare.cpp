@@ -14,8 +14,6 @@
 #include "minstrobe_hash.hpp"
 #include "syncmer.hpp"
 #include "syncmer_hash.hpp"
-#include "opensyncmer.hpp"
-#include "opensyncmer_hash.hpp"
 
 /*! \brief Calculate mean and variance of given list.
  *  \param results The vector from which mean and varaince should be calculated of.
@@ -299,9 +297,6 @@ void do_comparison(std::vector<std::filesystem::path> sequence_files, range_argu
                         break;
         case syncmer: compare(sequence_files, syncmer_hash(args.shape,
                                 args.K, args.S), "syncmer_" + std::to_string(args.k_size) + "_" +  std::to_string(args.K) + "_" +  std::to_string(args.S), args);
-                        break;
-        case opensyncmer: compare(sequence_files, syncmer_hash(args.shape,
-                                args.K, args.S), "opensyncmer_" + std::to_string(args.k_size) + "_" +  std::to_string(args.K) + "_" +  std::to_string(args.S), args);
                         break;
         case strobemer: std::ranges::empty_view<seqan3::detail::empty_type> empty{};
                         if (args.rand & (args.order == 2))
