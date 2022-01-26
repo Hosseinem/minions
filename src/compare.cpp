@@ -293,7 +293,7 @@ void do_comparison(std::vector<std::filesystem::path> sequence_files, range_argu
                                 args.w_size.get(), args.seed_se), "modmer_hash_" + std::to_string(args.k_size) + "_" + std::to_string(args.w_size.get()), args);
                         break;
         case minstrobe: compare(sequence_files, minstrobe_hash(args.shape,
-                                args.w_min, args.w_max, args.seed_se), "minstrobe_" + std::to_string(args.k_size) + "_" +  std::to_string(args.w_min) + "_" +  std::to_string(args.w_max), args);
+                                args.window_min, args.window_max, args.seed_se), "minstrobe_" + std::to_string(args.k_size) + "_" +  std::to_string(args.window_min) + "_" +  std::to_string(args.window_max), args);
                         break;
         case syncmer: compare(sequence_files, syncmer_hash(args.shape, args.kmer_size, args.smer_size, args.seed_se), "syncmer_" + std::to_string(args.k_size) + "_" + std::to_string(args.kmer_size) + "_" +  std::to_string(args.smer_size), args);
                         break;

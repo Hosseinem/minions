@@ -39,6 +39,13 @@ struct strobemer_arguments
     unsigned int order;
 };
 
+struct minstrobe_arguments
+{
+    // Needed for strobemers
+    unsigned int window_min;
+    unsigned int window_max;
+};
+    
 struct syncmer_arguments
 {
     // Needed for strobemers
@@ -46,7 +53,7 @@ struct syncmer_arguments
     unsigned int smer_size;
 };
 
-struct range_arguments : minimiser_arguments, strobemer_arguments, syncmer_arguments
+struct range_arguments : minimiser_arguments, strobemer_arguments, syncmer_arguments, minstrobe_arguments
 {
    std::filesystem::path path_out{"./"};
 

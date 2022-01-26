@@ -75,7 +75,7 @@ struct syncmer_hash_fn
             throw std::invalid_argument{"The chosen Kmer is not valid. "
                                         "Please choose a value greater than 1."};
 
-        auto first_hash = std::forward<urng_t>(urange) | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{smer_size}}) | std::views::transform([seed] (uint64_t i)
+        auto first_hash = std::forward<urng_t>(urange) | seqan3::views::kmer_hash(seqan3::shape(seqan3::ungapped(smer_size))) | std::views::transform([seed] (uint64_t i)
                                                                                   {return i ^ seed.get();});
         auto second_hash = std::forward<urng_t>(urange) | seqan3::views::kmer_hash(shape) 
                                                         | std::views::transform([seed] (uint64_t i)

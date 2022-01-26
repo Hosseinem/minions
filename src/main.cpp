@@ -48,6 +48,12 @@ void read_range_arguments_syncmer(seqan3::argument_parser & parser, range_argume
     parser.add_option(args.kmer_size, '\0', "kmer_size", "Define the k-mer size for syncmers.");
 }
 
+void read_range_arguments_minstrobe(seqan3::argument_parser & parser, range_arguments & args)
+{
+    parser.add_option(args.window_min, '\0', "window_min", "Define the s-mer size for syncmers.");
+    parser.add_option(args.window_max, '\0', "window_max", "Define the k-mer size for syncmers.");
+}
+
 void parsing(range_arguments & args)
 {
     args.w_size = seqan3::window_size{w_size};
