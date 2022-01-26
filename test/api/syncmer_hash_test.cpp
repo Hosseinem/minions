@@ -23,19 +23,19 @@ using result_t = std::vector<size_t>;
 
 using iterator_type = std::ranges::iterator_t<decltype(std::declval<seqan3::dna4_vector&>()
                                                        | syncmer_hash(seqan3::ungapped{4},
-                                                                     2,4,
+                                                                     4,2,
                                                                      seqan3::seed{0}))>;
 
 static constexpr seqan3::shape ungapped_shape = seqan3::ungapped{4};
 static constexpr seqan3::shape gapped_shape = 0b1001_shape;
 static constexpr auto ungapped_view = syncmer_hash(ungapped_shape,
-                                                  2,6,
+                                                  4,2,
                                                   seqan3::seed{0});
 static constexpr auto ungapped_3_view = syncmer_hash(ungapped_shape,
-                                            3,7,
+                                            4,2,
                                             seqan3::seed{0});
 static constexpr auto gapped_view = syncmer_hash(gapped_shape,
-                                                2,5,
+                                                4,2,
                                                 seqan3::seed{0});
 
 template <>
@@ -112,9 +112,9 @@ TEST_F(syncmer_hash_test, ungapped)
     EXPECT_RANGE_EQ(result1, text1 | ungapped_view);
     EXPECT_TRUE(std::ranges::empty(too_short_text | ungapped_view));
     EXPECT_RANGE_EQ(result3_ungapped, text3 | ungapped_view);
-    EXPECT_NO_THROW(text1 | syncmer_hash(ungapped_shape, 2,6));
+    EXPECT_NO_THROW(text1 | syncmer_hash(ungapped_shape, 4,2));
     EXPECT_RANGE_EQ(result3_ungapped_3, text3 | ungapped_3_view);
-    EXPECT_THROW((text3 | syncmer_hash(ungapped_shape, 1,4)), std::invalid_argument);
+    EXPECT_THROW((text3 | syncmer_hash(ungapped_shape, 4,2)), std::invalid_argument);
 }
 
 TEST_F(syncmer_hash_test, gapped)
@@ -122,8 +122,8 @@ TEST_F(syncmer_hash_test, gapped)
     EXPECT_RANGE_EQ(result1, text1 | gapped_view);
     EXPECT_TRUE(std::ranges::empty(too_short_text | gapped_view));
     EXPECT_RANGE_EQ(result3_gapped, text3 | gapped_view);
-    EXPECT_NO_THROW(text1 | syncmer_hash(gapped_shape, 2,3));
-    EXPECT_THROW((text3 | syncmer_hash(gapped_shape, 1,7)), std::invalid_argument);
+    EXPECT_NO_THROW(text1 | syncmer_hash(gapped_shape, 4,2));
+    EXPECT_THROW((text3 | syncmer_hash(gapped_shape, 4,2)), std::invalid_argument);
 }
 
 TEST_F(syncmer_hash_test, combinability)

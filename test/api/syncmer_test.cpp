@@ -41,7 +41,7 @@ struct iterator_fixture<iterator_type> : public ::testing::Test
     result_t expected_range{26, 166, 152, 134, 252, 242};
 
     decltype(syncmer(seqan3::views::kmer_hash(text, seqan3::ungapped{4}), 2,6)) test_range =
-    syncmer(vec, 2);
+    syncmer(vec, 2, 6);
 };
 
 using test_types = ::testing::Types<iterator_type>;
@@ -125,9 +125,9 @@ TEST_F(syncmer_test, ungapped_kmer_hash)
     EXPECT_RANGE_EQ(result3_ungapped, text3 | kmer_view | syncmer_view);
 
     auto v1 = text1 | kmer_view;
-    EXPECT_RANGE_EQ(result1_distance, (seqan3::detail::syncmer_view<decltype(v1), true>(v1, 2,6)));
+    EXPECT_RANGE_EQ(result1_distance, (seqan3::detail::syncmer_view<decltype(v1), false>(v1, 2,6)));
     auto v2 = text3 | kmer_view;
-    EXPECT_RANGE_EQ(result3_distance, (seqan3::detail::syncmer_view<decltype(v2), true>(v2, 2,6)));
+    EXPECT_RANGE_EQ(result3_distance, (seqan3::detail::syncmer_view<decltype(v2), false>(v2, 2,6)));
 }
 
 TEST_F(syncmer_test, gapped_kmer_hash)
@@ -138,9 +138,9 @@ TEST_F(syncmer_test, gapped_kmer_hash)
     EXPECT_RANGE_EQ(result3_gapped, text3 | gapped_kmer_view | syncmer_view);
 
     auto v1 = text1 | gapped_kmer_view;
-    EXPECT_RANGE_EQ(result1_distance, (seqan3::detail::syncmer_view<decltype(v1), true>(v1, 2,6)));
+    EXPECT_RANGE_EQ(result1_distance, (seqan3::detail::syncmer_view<decltype(v1), false>(v1, 2,6)));
     auto v2 = text3 | gapped_kmer_view;
-    EXPECT_RANGE_EQ(result3_distance, (seqan3::detail::syncmer_view<decltype(v2), true>(v2, 2,6)));
+    EXPECT_RANGE_EQ(result3_distance, (seqan3::detail::syncmer_view<decltype(v2), false>(v2, 2,6)));
 }
 
 TEST_F(syncmer_test, combinability)
@@ -151,14 +151,14 @@ TEST_F(syncmer_test, combinability)
 
     auto v1 = text3 | stop_at_t | kmer_view;
     auto v2 = text3 | stop_at_t | kmer_view;
-    EXPECT_RANGE_EQ(result3_distance_stop, (seqan3::detail::syncmer_view<decltype(v1), true>(v1, 2,6)));
-    EXPECT_RANGE_EQ(result3_distance_stop, (seqan3::detail::syncmer_view<decltype(v2), true>(v2, 2,6)));
+    EXPECT_RANGE_EQ(result3_distance_stop, (seqan3::detail::syncmer_view<decltype(v1), false>(v1, 2,6)));
+    EXPECT_RANGE_EQ(result3_distance_stop, (seqan3::detail::syncmer_view<decltype(v2), false>(v2, 2,6)));
 
     auto start_at_a = std::views::drop(6);
     EXPECT_RANGE_EQ(result3_ungapped_start, (seqan3::detail::syncmer_view{text3 | start_at_a | kmer_view, 2,6}));
 
     auto v3 = text3 | start_at_a | kmer_view;
     auto v4 = text3 | start_at_a | gapped_kmer_view;
-    EXPECT_RANGE_EQ(result3_distance_start, (seqan3::detail::syncmer_view<decltype(v3), true>(v3, 2,6)));
-    EXPECT_RANGE_EQ(result3_distance_start, (seqan3::detail::syncmer_view<decltype(v4), true>(v4, 2,6)));
+    EXPECT_RANGE_EQ(result3_distance_start, (seqan3::detail::syncmer_view<decltype(v3), false>(v3, 2,6)));
+    EXPECT_RANGE_EQ(result3_distance_start, (seqan3::detail::syncmer_view<decltype(v4), false>(v4, 2,6)));
 }

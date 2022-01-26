@@ -31,9 +31,9 @@ struct syncmer_hash_fn
     * \throws std::invalid_argument if the size of the shape is greater than the `mod_used`.
     * \returns               A range of converted elements.
     */
-    constexpr auto operator()(uint32_t const K, uint32_t const S) const
+    constexpr auto operator()(shape const & shape,uint32_t const kmer_size, uint32_t const smer_size) const
     {
-        return seqan3::detail::adaptor_from_functor{*this, K, S};
+        return seqan3::detail::adaptor_from_functor{*this, shape, kmer_size, smer_size};
     }
 
     /*!\brief Store the shape, the window size and the seed and return a range adaptor closure object.
@@ -43,9 +43,9 @@ struct syncmer_hash_fn
     * \throws std::invalid_argument if the size of the shape is greater than the `mod_used`.
     * \returns               A range of converted elements.
     */
-    constexpr auto operator()(uint32_t const K, uint32_t const S, seed const seed) const
+    constexpr auto operator()(shape const & shape, uint32_t const kmer_size, uint32_t const smer_size, seed const seed) const
     {
-        return seqan3::detail::adaptor_from_functor{*this, K, S, seed};
+        return seqan3::detail::adaptor_from_functor{*this, shape, kmer_size, smer_size, seed};
     }
 
     /*!\brief Call the view's constructor with the underlying view, a seqan3::shape and a window size as argument.
@@ -59,8 +59,9 @@ struct syncmer_hash_fn
      */
     template <std::ranges::range urng_t>
     constexpr auto operator()(urng_t && urange,
-                              uint32_t const K,
-			      uint32_t const S,
+                              shape const & shape,
+                              uint32_t const kmer_size,
+			      uint32_t const smer_size,
                               seed const seed = seqan3::seed{0x8F3F73B5CF1C9ADE}) const
     {
         static_assert(std::ranges::viewable_range<urng_t>,
@@ -70,16 +71,17 @@ struct syncmer_hash_fn
         static_assert(semialphabet<std::ranges::range_reference_t<urng_t>>,
             "The range parameter to views::syncmer_hash must be over elements of seqan3::semialphabet.");
 
-        if (K == 1) // Would just return urange1 without any changes
+        if (kmer_size == 1) // Would just return urange1 without any changes
             throw std::invalid_argument{"The chosen Kmer is not valid. "
                                         "Please choose a value greater than 1."};
 
-        auto first_hash = std::forward<urng_t>(urange) | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{S}}) | std::views::transform([seed] (uint64_t i)
+        auto first_hash = std::forward<urng_t>(urange) | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{smer_size}}) | std::views::transform([seed] (uint64_t i)
                                                                                   {return i ^ seed.get();});
-        auto second_hash = std::forward<urng_t>(urange) | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{K}}) | std::views::transform([seed] (uint64_t i)
+        auto second_hash = std::forward<urng_t>(urange) | seqan3::views::kmer_hash(shape) 
+                                                        | std::views::transform([seed] (uint64_t i)
                                                                                   {return i ^ seed.get();});
 
-        return seqan3::detail::syncmer_view(first_hash, second_hash, S, K);
+        return seqan3::detail::syncmer_view(first_hash, second_hash, smer_size, kmer_size);
     }
 };
 

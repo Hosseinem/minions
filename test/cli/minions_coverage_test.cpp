@@ -30,21 +30,21 @@ TEST_F(cli_test, gapped_minimiser)
     EXPECT_EQ(result.err, std::string{});
 }
 
-TEST_F(cli_test, minstrobe)
-{
-    cli_test_result result = execute_app("minions coverage --method minstrobe --w_min 3 --w_max 5", data("example1.fasta"));
-    EXPECT_EQ(result.exit_code, 0);
-    EXPECT_EQ(result.out, std::string{});
-    EXPECT_EQ(result.err, std::string{});
-}
-
-TEST_F(cli_test, syncmer)
-{
-    cli_test_result result = execute_app("minions coverage --method syncmer -K 6 -S 3", data("example1.fasta"));
-    EXPECT_EQ(result.exit_code, 0);
-    EXPECT_EQ(result.out, std::string{});
-    EXPECT_EQ(result.err, std::string{});
-}
+// TEST_F(cli_test, minstrobe)
+// {
+//     cli_test_result result = execute_app("minions coverage --method minstrobe --w_min 3 --w_max 5", data("example1.fasta"));
+//     EXPECT_EQ(result.exit_code, 0);
+//     EXPECT_EQ(result.out, std::string{});
+//     EXPECT_EQ(result.err, std::string{});
+// }
+// 
+// TEST_F(cli_test, syncmer)
+// {
+//     cli_test_result result = execute_app("minions coverage --method syncmer -K 6 -S 3", data("example1.fasta"));
+//     EXPECT_EQ(result.exit_code, 0);
+//     EXPECT_EQ(result.out, std::string{});
+//     EXPECT_EQ(result.err, std::string{});
+// }
 
 
 TEST_F(cli_test, modmer)

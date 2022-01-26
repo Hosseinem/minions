@@ -44,8 +44,8 @@ void read_range_arguments_minimiser(seqan3::argument_parser & parser, range_argu
 }
 void read_range_arguments_syncmer(seqan3::argument_parser & parser, range_arguments & args)
 {
-    parser.add_option(args.w_min, '\0', "S", "Define the s-mer size for syncmers.");
-    parser.add_option(args.w_min, '\0', "K", "Define the k-mer size for syncmers.");
+    parser.add_option(args.smer_size, '\0', "smer_size", "Define the s-mer size for syncmers.");
+    parser.add_option(args.kmer_size, '\0', "kmer_size", "Define the k-mer size for syncmers.");
 }
 
 void parsing(range_arguments & args)

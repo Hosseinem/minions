@@ -42,8 +42,8 @@ struct strobemer_arguments
 struct syncmer_arguments
 {
     // Needed for strobemers
-    unsigned int K;
-    unsigned int S;
+    unsigned int kmer_size;
+    unsigned int smer_size;
 };
 
 struct range_arguments : minimiser_arguments, strobemer_arguments, syncmer_arguments

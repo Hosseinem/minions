@@ -48,7 +48,7 @@ TEST_F(cli_test, minstrobe)
 
 TEST_F(cli_test, syncmer)
 {
-    cli_test_result result = execute_app("minions speed --method syncmer --K 3 --S 6", data("example1.fasta"));
+    cli_test_result result = execute_app("minions speed --method syncmer --kmer_size 3 --smer_size 6", data("example1.fasta"));
     EXPECT_EQ(result.exit_code, 0);
     EXPECT_EQ(result.out, std::string{});
     EXPECT_EQ(result.err, std::string{});
