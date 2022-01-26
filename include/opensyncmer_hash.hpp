@@ -79,7 +79,7 @@ struct syncmer_hash_fn
         auto second_hash = std::forward<urng_t>(urange) | seqan3::views::kmer_hash(seqan3::shape{seqan3::ungapped{K}}) | std::views::transform([seed] (uint64_t i)
                                                                                   {return i ^ seed.get();});
 
-        return seqan3::detail::syncmer_view(first_hash, second_hash, S, K);
+        return seqan3::detail::syncmer_view<decltype(first_hash), decltype(second_hash), true>(first_hash, second_hash, S, K);
     }
 };
 

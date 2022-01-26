@@ -217,14 +217,14 @@ public:
         requires const_range
     //!\endcond
         : minstrobe_value{std::move(it.minstrobe_value)},
-          urng1_iterator{std::move(it.urng1_iterator)},
+          second_iterator{std::move(it.second_iterator)},
           urng1_sentinel{std::move(it.urng1_sentinel)}
 
     {}
 
     /*!\brief Construct from begin and end iterators of a given range over std::totally_ordered values, and the number
               of values per window.
-    * \param[in] urng1_iterator Iterator pointing to the first position of the first std::totally_ordered range.
+    * \param[in] second_iterator Iterator pointing to the first position of the first std::totally_ordered range.
     * \param[in] urng1_sentinel Iterator pointing to the last position of the first std::totally_ordered range.
     * \param[in] window_min  The lower offset for the position of the next window from the previous one.
     * \param[in] window_max  The upper offset for the position of the next window from the previous one.
@@ -235,11 +235,11 @@ public:
     * the first strobe. The second iterator adds the minimum value of the window to the second position of the tuple.
     *
     */
-    basic_iterator(urng1_iterator_t urng1_iterator,
+    basic_iterator(urng1_iterator_t second_iterator,
                    urng1_sentinel_t urng1_sentinel,
                    size_t window_min,
                    size_t window_max) :
-        urng1_iterator{std::move(urng1_iterator)},
+        second_iterator{std::move(second_iterator)},
         urng1_sentinel{std::move(urng1_sentinel)}
     {
         window_first(window_min, window_max);
@@ -253,7 +253,7 @@ public:
     //!\brief Compare to another basic_iterator.
     friend bool operator==(basic_iterator const & lhs, basic_iterator const & rhs)
     {
-        return (lhs.urng1_iterator == rhs.urng1_iterator);
+        return (lhs.second_iterator == rhs.second_iterator);
     }
 
     //!\brief Compare to another basic_iterator.
@@ -265,7 +265,7 @@ public:
     //!\brief Compare to the sentinel of the minstrobe_view.
     friend bool operator==(basic_iterator const & lhs, sentinel const &)
     {
-        return lhs.urng1_iterator == lhs.urng1_sentinel;
+        return lhs.second_iterator == lhs.urng1_sentinel;
     }
 
     //!\brief Compare to the sentinel of the minstrobe_view.
@@ -290,7 +290,7 @@ public:
     //!\brief Pre-increment.
     basic_iterator & operator++() noexcept
     {
-        next_unique_minstrobe();
+        next_minstrobe();
         return *this;
     }
 
@@ -298,7 +298,7 @@ public:
     basic_iterator operator++(int) noexcept
     {
         basic_iterator tmp{*this};
-        next_unique_minstrobe();
+        next_minstrobe();
         return tmp;
     }
 
@@ -315,10 +315,12 @@ private:
     //!\brief The offset relative to the beginning of the window where the minstrobe value is found.
     size_t minstrobe_position_offset{};
 
-    //!\brief Iterator to the right most value of the window.
-    urng1_iterator_t urng1_iterator{};
-    //!\brief Iterator to the first value of minstrobe.
+    //!\brief Iterator to the first strobe of minstrobe.
     urng1_iterator_t first_iterator{};
+
+    //!\brief Iterator to the right most value of the window and hence the second strobe of minstrobe.
+    urng1_iterator_t second_iterator{};
+
     //!\brief Iterator to last element in range.
     urng1_sentinel_t urng1_sentinel{};
 
@@ -328,57 +330,33 @@ private:
     //!\brief The number of values in one window.
     size_t window_size{};
 
-    //!\brief Increments iterator by 1.
-    void next_unique_minstrobe()
-    {
-        while (!next_minstrobe()) {}
-    }
-
-    //!\brief Returns new window value of the first iterator.
-    auto window_value() const
-    {
-        return *urng1_iterator;
-    }
-
-    //!\brief Returns new window value of the first iterator.
-    auto first_window_value() const
-    {
-        return *first_iterator;
-    }
-
     //!\brief Advances the window of the first iterator to the next position.
-    void advance_window()
-    {
-        ++urng1_iterator;
-    }
-
-    //!\brief Advances the window of the first iterator to the next position.
-    void advance_all_windows()
+    void advance_windows()
     {
         ++first_iterator;
-	++urng1_iterator;
+        ++second_iterator;
     }
 
     //!\brief Calculates minstrobes for the first window.
     void window_first(const size_t window_min, const size_t window_max)
     {
-	window_size = (window_max - window_min + 1);
+        window_size = (window_max - window_min + 1);
 
-	if (window_size == 0u)
+        if (window_size == 0u)
             return;
 
-	first_iterator = urng1_iterator;
-	std::advance(urng1_iterator, window_min);
+        first_iterator = second_iterator;
+        std::advance(second_iterator, window_min);
 
         for (int i = 1u; i < window_size; ++i)
         {
-            window_values.push_back(window_value());
-            advance_window();
+            window_values.push_back(*second_iterator);
+            ++second_iterator;
         }
-        window_values.push_back(window_value());
+        window_values.push_back(*second_iterator);
 
         auto minstrobe_it = std::ranges::min_element(window_values, std::less_equal<value_t>{});
-        minstrobe_value = std::make_tuple(first_window_value(), *minstrobe_it);
+        minstrobe_value = std::make_tuple(*first_iterator, *minstrobe_it);
         minstrobe_position_offset = std::distance(std::begin(window_values), minstrobe_it);
 
     }
@@ -389,40 +367,34 @@ private:
      * For the following windows, we remove the first window value (is now not in window_values) and add the new
      * value that results from the window shifting.
      */
-    bool next_minstrobe()
+    void next_minstrobe()
     {
-    	advance_all_windows();
+        advance_windows();
 
-        if (urng1_iterator == urng1_sentinel)
-            return true;
-
-        value_t const new_value = first_window_value();
-        value_t const sw_new_value = window_value();
-
+        value_t const new_value = *first_iterator;
+        value_t const sw_new_value = *second_iterator;
 
         std::get<0>(minstrobe_value) = new_value;
 
         window_values.pop_front();
         window_values.push_back(sw_new_value);
 
-	if (minstrobe_position_offset == 0)
-	{
-		auto minstrobe_it = std::ranges::min_element(window_values, std::less_equal<value_t>{});
-		std::get<1>(minstrobe_value) = *minstrobe_it;
-		minstrobe_position_offset = std::distance(std::begin(window_values), minstrobe_it);
-		return true;
+        if (minstrobe_position_offset == 0)
+        {
+            auto minstrobe_it = std::ranges::min_element(window_values, std::less_equal<value_t>{});
+            std::get<1>(minstrobe_value) = *minstrobe_it;
+            minstrobe_position_offset = std::distance(std::begin(window_values), minstrobe_it);
+            return;
+        }
 
-	}
+        if (sw_new_value < std::get<1>(minstrobe_value))
+        {
+            std::get<1>(minstrobe_value) = sw_new_value;
+            minstrobe_position_offset = window_values.size() - 1;
+            return;
+        }
 
-	if (sw_new_value < std::get<1>(minstrobe_value))
-	     {
-	          std::get<1>(minstrobe_value) = sw_new_value;
-	          minstrobe_position_offset = window_values.size() - 1;
-	          return true;
-	     }
-
-	--minstrobe_position_offset;
-	return true;
+        --minstrobe_position_offset;
     }
 };
 
@@ -466,9 +438,9 @@ struct minstrobe_fn
         static_assert(std::ranges::forward_range<urng1_t>,
                       "The range parameter to views::minstrobe must model std::ranges::forward_range.");
 
-        if (window_max - window_min == 0) // Would just return urange1 without any changes
+        if (window_max <= window_min) // Would just return urange1 without any changes
             throw std::invalid_argument{"The chosen min and max windows are not valid. "
-                                        "Please choose a value greater than 1 or use two ranges."};
+                                        "Window_max should be greater than window_min."};
 
         return minstrobe_view{urange1, window_min, window_max};
     }
@@ -479,7 +451,8 @@ struct minstrobe_fn
 
 namespace seqan3::views
 {
-/*!\brief Computes minstrobes for a range of comparable values. A minstrobe is a value that is composed of a few single strobes concatenated together, chosen window_min elements apart based on their minimum value in a window.
+/*!\brief Computes minstrobes for a range of comparable values. A minstrobe consists of a starting strobe
+ * concatenated with n−1 consecutively concatenated minimizers.
  * \tparam urng_t The type of the first range being processed. See below for requirements. [template
  *                 parameter is omitted in pipe notation]
  * \param[in] urange1 The range being processed. [parameter is omitted in pipe notation]
@@ -489,6 +462,12 @@ namespace seqan3::views
  *          properties of the returned range.
  * \ingroup search_views
  *
+ * \details
+ *
+ * A minstrobe defined by [Sahlin K.](https://genome.cshlp.org/content/31/11/2080.full.pdf) consists of
+ * a starting strobe concatenated with n−1 consecutively concatenated minimizers in their respective windows.
+ * For example for the following list of hash values `[6, 26, 41, 38, 24, 33, 6, 27, 47]` and 3 as `window_min`,
+ * 5 as `window_max`, the minstrobe values are `[(6,24),(26,6),(41,6),(38,6)]`.
  *
  * ### View properties
  *
