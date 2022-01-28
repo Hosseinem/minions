@@ -67,7 +67,7 @@ void compare(std::vector<std::filesystem::path> sequence_files, urng_t input_vie
     {
         robin_hood::unordered_node_map<uint64_t, uint16_t> hash_table{};
         auto start = std::chrono::high_resolution_clock::now();
-       if constexpr (strobemers > 0)
+        if constexpr (strobemers > 0)
         {
             seqan3::sequence_file_input<my_traits2, seqan3::fields<seqan3::field::seq>> fin{sequence_files[i]};
             for (auto & [seq] : fin)
@@ -79,18 +79,20 @@ void compare(std::vector<std::filesystem::path> sequence_files, urng_t input_vie
             }
         }
         else
-        {   
-            if ( method_name == "minstrobe")
-            {
-                std::vector<std::tuple<unsigned int, unsigned int>> strobes_vector;
-                for (auto && strobes_vector : seq | input_view)
-                    hash_table[std::get<0>(strobes_vector)] = std::min<uint16_t>(65534u, hash_table[std::get<0>(strobes_vector)] + 1);
-            }
-            else
+        {
+            seqan3::sequence_file_input<my_traits, seqan3::fields<seqan3::field::seq>> fin{sequence_files[i]};
+            for (auto & [seq] : fin)
             {
                 for (auto && hash : seq | input_view)
+                {
+                    if (typeid(hash) == typeid(std::tuple<long unsigned int, long unsigned int>))
+                    {
+                        hash_table[std::get<0>(hash)] = std::min<uint16_t>(65534u, hash_table[std::get<0>(hash)] + 1);
+                    }
+                    else
                     hash_table[hash] = std::min<uint16_t>(65534u, hash_table[hash] + 1);
-            };
+                }
+            }
         }
         auto end = std::chrono::high_resolution_clock::now();
         auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
