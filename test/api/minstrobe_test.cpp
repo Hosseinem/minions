@@ -21,7 +21,8 @@ using seqan3::operator""_dna4;
 using seqan3::operator""_shape;
 using result_t = std::vector<size_t>;
 
-inline static constexpr auto kmer_view = seqan3::views::kmer_hash(seqan3::ungapped{4});
+inline static constexpr auto kmer_view = seqan3::views::kmer_hash(seqan3::ungapped{5});
+inline static constexpr auto smer_view = seqan3::views::kmer_hash(seqan3::ungapped{2};
 inline static constexpr auto gapped_kmer_view = seqan3::views::kmer_hash(0b1001_shape);
 
 inline static constexpr auto minstrobe_view = minstrobe(2,5);
@@ -40,7 +41,7 @@ struct iterator_fixture<iterator_type> : public ::testing::Test
     decltype(seqan3::views::kmer_hash(text, seqan3::ungapped{4})) vec = text | kmer_view;
     result_t expected_range{26, 166, 152, 134, 252, 242};
 
-    decltype(minstrobe(seqan3::views::kmer_hash(text, seqan3::ungapped{4}), 2, 5)) test_range =
+    decltype(minstrobe(seqan3::views::kmer_hash(text, seqan3::ungapped{5}), seqan3::views::kmer_hash(text, seqan3::ungapped{2}), 2, 5)) test_range =
     minstrobe(vec, 2, 5);
 };
 
