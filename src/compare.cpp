@@ -37,9 +37,9 @@ void get_mean_and_var(urng_t & results, double & mean, double & stdev)
  *  \param args The range_arguments.
  *  \param strobes_vector The vector for the strobemers.
  */
-template <int strobemers_func, typename urng_t>
+template <int strobemers_func>
 void get_strobemers(std::string & seq, range_arguments const & args,
-std::vector<std::tuple<uint64_t, unsigned int, unsigned int, unsigned int, unsigned int>> & strobes_vector, std::vector<std::tuple<unsigned int, unsigned int>> & minstrobe_vector)
+std::vector<std::tuple<uint64_t, unsigned int, unsigned int, unsigned int, unsigned int>> & strobes_vector)
 {
     if constexpr (strobemers_func == 1)
         strobes_vector = seq_to_randstrobes2(args.order, args.k_size, args.w_min, args.w_max, seq, 0);
@@ -49,8 +49,8 @@ std::vector<std::tuple<uint64_t, unsigned int, unsigned int, unsigned int, unsig
         strobes_vector = seq_to_hybridstrobes2(args.order, args.k_size, args.w_min, args.w_max, seq, 0);
     else if constexpr (strobemers_func == 4)
         strobes_vector = seq_to_minstrobes2(args.order, args.k_size, args.w_min, args.w_max, seq, 0);
-    else if constexpr (strobemers_func == 5)
-        minstrobe_vector = seq | input_view;
+//     else if constexpr (strobemers_func == 5)
+//         minstrobe_vector = seq | input_view;
 }
 
 /*! \brief Function, comparing the methods.
@@ -74,20 +74,20 @@ void compare(std::vector<std::filesystem::path> sequence_files, urng_t input_vie
             seqan3::sequence_file_input<my_traits2, seqan3::fields<seqan3::field::seq>> fin{sequence_files[i]};
             for (auto & [seq] : fin)
             {
-                if constexpr (strobemers == 5)
-                {
-                    std::vector<std::tuple<unsigned int, unsigned int>> minstrobe_vector;
-                    get_strobemers<strobemers>(seq, args, minstrobe_vector);
-                    for (auto & t : minstrobe_vector) // iterate over the strobemer tuples
-                        hash_table[std::get<0>(t)] = std::min<uint16_t>(65534u, hash_table[std::get<0>(t)] + 1);
-                }
-                else
-                {
+//                 if constexpr (strobemers == 5)
+//                 {
+//                     std::vector<std::tuple<unsigned int, unsigned int>> minstrobe_vector;
+//                     get_strobemers<strobemers>(seq, args, minstrobe_vector);
+//                     for (auto & t : minstrobe_vector) // iterate over the strobemer tuples
+//                         hash_table[std::get<0>(t)] = std::min<uint16_t>(65534u, hash_table[std::get<0>(t)] + 1);
+//                 }
+//                 else
+//                 {
                     std::vector<std::tuple<uint64_t, unsigned int, unsigned int, unsigned int, unsigned int>> strobes_vector;
                     get_strobemers<strobemers>(seq, args, strobes_vector);
                     for (auto & t : strobes_vector) // iterate over the strobemer tuples
                         hash_table[std::get<0>(t)] = std::min<uint16_t>(65534u, hash_table[std::get<0>(t)] + 1);
-                };
+//                 };
             }
         }
         else
@@ -304,11 +304,11 @@ void do_comparison(std::vector<std::filesystem::path> sequence_files, range_argu
         case modmers: compare(sequence_files, modmer_hash(args.shape,
                                 args.w_size.get(), args.seed_se), "modmer_hash_" + std::to_string(args.k_size) + "_" + std::to_string(args.w_size.get()), args);
                         break;
-        case minstrobe: compare<5>(sequence_files, minstrobe_hash(args.shape,
-                                args.window_min, args.window_max, args.seed_se), "minstrobe_" + std::to_string(args.k_size) + "_" +  std::to_string(args.window_min) + "_" +  std::to_string(args.window_max), args);
-                        break;
-        case syncmer: compare(sequence_files, syncmer_hash(args.shape, args.kmer_size, args.smer_size, args.seed_se), "syncmer_" + std::to_string(args.k_size) + "_" + std::to_string(args.kmer_size) + "_" +  std::to_string(args.smer_size), args);
-                        break;
+//         case minstrobe: compare<5>(sequence_files, minstrobe_hash(args.shape,
+//                                 args.window_min, args.window_max, args.seed_se), "minstrobe_" + std::to_string(args.k_size) + "_" +  std::to_string(args.window_min) + "_" +  std::to_string(args.window_max), args);
+//                         break;
+//         case syncmer: compare(sequence_files, syncmer_hash(args.shape, args.kmer_size, args.smer_size, args.seed_se), "syncmer_" + std::to_string(args.k_size) + "_" + std::to_string(args.kmer_size) + "_" +  std::to_string(args.smer_size), args);
+//                         break;
         case strobemer: std::ranges::empty_view<seqan3::detail::empty_type> empty{};
                         if (args.rand & (args.order == 2))
                             compare<std::ranges::empty_view<seqan3::detail::empty_type>, 1>(sequence_files, empty,

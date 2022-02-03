@@ -38,21 +38,21 @@ TEST_F(cli_test, modmer)
     EXPECT_EQ(result.err, std::string{});
 }
 
-TEST_F(cli_test, minstrobe)
-{
-    cli_test_result result = execute_app("minions speed --method minstrobe -k 6 --window_min 3 --window_max 5", data("example1.fasta"));
-    EXPECT_EQ(result.exit_code, 0);
-    EXPECT_EQ(result.out, std::string{});
-    EXPECT_EQ(result.err, std::string{});
-}
-
-TEST_F(cli_test, syncmer)
-{
-    cli_test_result result = execute_app("minions speed --method syncmer --kmer_size 3 --smer_size 6", data("example1.fasta"));
-    EXPECT_EQ(result.exit_code, 0);
-    EXPECT_EQ(result.out, std::string{});
-    EXPECT_EQ(result.err, std::string{});
-}
+// TEST_F(cli_test, minstrobe)
+// {
+//     cli_test_result result = execute_app("minions speed --method minstrobe -k 6 --window_min 3 --window_max 5", data("example1.fasta"));
+//     EXPECT_EQ(result.exit_code, 0);
+//     EXPECT_EQ(result.out, std::string{});
+//     EXPECT_EQ(result.err, std::string{});
+// }
+// 
+// TEST_F(cli_test, syncmer)
+// {
+//     cli_test_result result = execute_app("minions speed --method syncmer --kmer_size 3 --smer_size 6", data("example1.fasta"));
+//     EXPECT_EQ(result.exit_code, 0);
+//     EXPECT_EQ(result.out, std::string{});
+//     EXPECT_EQ(result.err, std::string{});
+// }
 
 
 TEST_F(cli_test, hybridstrobemer)
