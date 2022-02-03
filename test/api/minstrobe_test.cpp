@@ -22,10 +22,10 @@ using seqan3::operator""_shape;
 using minstrobe_result_t = std::vector<std::tuple<size_t, size_t>>;
 using kmer_result_t = std::vector<size_t>;
 
-inline static constexpr auto kmer_view = seqan3::views::kmer_hash(seqan3::ungapped{5});
+inline static constexpr auto kmer_view = seqan3::views::kmer_hash(seqan3::ungapped{4});
 inline static constexpr auto gapped_kmer_view = seqan3::views::kmer_hash(0b1001_shape);
 
-inline static constexpr auto minstrobe_view = minstrobe(2,8);
+inline static constexpr auto minstrobe_view = minstrobe(2,5);
 
 using iterator_type = std::ranges::iterator_t< decltype(std::declval<seqan3::dna4_vector&>()
                                                | kmer_view
@@ -38,11 +38,11 @@ struct iterator_fixture<iterator_type> : public ::testing::Test
     static constexpr bool const_iterable = true;
 
     seqan3::dna4_vector text{"ACGGCGACGTTTAG"_dna4};
-    decltype(seqan3::views::kmer_hash(text, seqan3::ungapped{5})) vec = text | kmer_view;
-    kmer_result_t expected_range{26, 166, 152, 134, 252, 242};
+    decltype(seqan3::views::kmer_hash(text, seqan3::ungapped{4})) vec = text | kmer_view;
+    kmer_result_t expected_range{(26,27),(105,27),(166,27)};
 
-    decltype(minstrobe(seqan3::views::kmer_hash(text, seqan3::ungapped{5}), 2, 8)) test_range =
-    minstrobe(vec, 2, 8);
+    decltype(minstrobe(seqan3::views::kmer_hash(text, seqan3::ungapped{4}), 2, 5)) test_range =
+    minstrobe(vec, 2, 5);
 };
 
 using test_types = ::testing::Types<iterator_type>;
@@ -64,9 +64,8 @@ TYPED_TEST_SUITE(minstrobe_view_properties_test, underlying_range_types, );
 class minstrobe_test : public ::testing::Test
 {
 protected:
-    std::vector<seqan3::dna4> text1{"AAAAAA"_dna4};
-    result_t result1{0, 0, 0}; // Same result for ungapped and gapped
-    result_t result1_distance{0, 0, 0};
+    std::vector<seqan3::dna4> text1{"AAAAAAAAAAAA"_dna4};
+    result_t result1{(0,0)}; // Same result for ungapped and gapped
 
     std::vector<seqan3::dna4> too_short_text{"AC"_dna4};
 
@@ -74,15 +73,10 @@ protected:
     // CCGT GCCG  CGCC  TCGC  GTCG  CGTC  ACGT  AACG  AAAC  TAAA  CTAA
     // ACGG CGGC cgcc GCGA CGAC cgtc ACGT aacg aaac taaa ctaa
     std::vector<seqan3::dna4> text3{"ACGGCGACGTTTAG"_dna4};
-    result_t result3_ungapped{26, 166, 152, 134, 252, 242}; // ACGG, GGCG, GCGA, GACG, TTTA, TTAG
-    result_t result3_gapped{2, 10, 8, 10, 12, 14};      // A--G, G--G, G--A, G--G, T--A, T--G "-" for gap
-    result_t result3_distance{0, 1, 0, 1, 3, 0};
-    result_t result3_ungapped_stop{26, 166, 152, 134}; // ACGG, GGCG, GCGA, GACG
-    result_t result3_gapped_stop{2, 10, 8, 10};
-    result_t result3_distance_stop{0, 1, 0, 1};
-    result_t result3_ungapped_start{252, 242};        // For start at second A, TTTA, TTAG
-    result_t result3_gapped_start{14};      // For start at second A, T--G
-    result_t result3_distance_start{3, 0};
+    result_t result3_ungapped{(26,97),(105,27),(166,27),(152,27),(97,27),(134,111)}; // ACGG, GGCG, GCGA, GACG, TTTA, TTAG
+    result_t result3_gapped{(2,5),(5,3),(10,3),(8,3),(5,3),(10,7)};      // A--G, G--G, G--A, G--G, T--A, T--G "-" for gap
+    result_t result3_ungapped_stop{(26,97)}; // ACGG, GGCG, GCGA, GACG
+    result_t result3_gapped_stop{(2,5)};
 };
 
 template <typename adaptor_t>
@@ -112,8 +106,8 @@ TYPED_TEST(minstrobe_view_properties_test, different_inputs_kmer_hash)
 {
     TypeParam text{'A'_dna4, 'C'_dna4, 'G'_dna4, 'T'_dna4, 'C'_dna4, 'G'_dna4, 'A'_dna4, 'C'_dna4, 'G'_dna4, 'T'_dna4,
                 'T'_dna4, 'T'_dna4, 'A'_dna4, 'G'_dna4}; // ACGTCGACGTTTAG
-    result_t ungapped{182, 216, 134, 252, 242};      // GTCG, TCGA, GACG, TTTA, TTAG
-    result_t gapped{10, 12, 10, 12, 14};             // G--G, T--G, T--A, G--G, T--A, T--G "-" for gap
+    result_t ungapped{(27,97),(109,27),(182,27),(216,27),(97,27),(134,111)};      // GTCG, TCGA, GACG, TTTA, TTAG
+    result_t gapped{(3,5),(5,3),(10,3),(12,3),(5,3),(10,7)};             // G--G, T--G, T--A, G--G, T--A, T--G "-" for gap
     EXPECT_RANGE_EQ(ungapped, text | kmer_view | minstrobe_view);
     EXPECT_RANGE_EQ(gapped, text | gapped_kmer_view | minstrobe_view);
 }
@@ -124,11 +118,6 @@ TEST_F(minstrobe_test, ungapped_kmer_hash)
     auto empty_view = too_short_text | kmer_view | minstrobe_view;
     EXPECT_TRUE(std::ranges::empty(empty_view));
     EXPECT_RANGE_EQ(result3_ungapped, text3 | kmer_view | minstrobe_view);
-
-    auto v1 = text1 | kmer_view;
-    EXPECT_RANGE_EQ(result1_distance, (seqan3::detail::minstrobe_view(v1, 2, 8)));
-    auto v2 = text3 | kmer_view;
-    EXPECT_RANGE_EQ(result3_distance, (seqan3::detail::minstrobe_view(v2, 2, 8)));
 }
 
 TEST_F(minstrobe_test, gapped_kmer_hash)
@@ -138,10 +127,6 @@ TEST_F(minstrobe_test, gapped_kmer_hash)
     EXPECT_TRUE(std::ranges::empty(empty_view));
     EXPECT_RANGE_EQ(result3_gapped, text3 | gapped_kmer_view | minstrobe_view);
 
-    auto v1 = text1 | gapped_kmer_view;
-    EXPECT_RANGE_EQ(result1_distance, (seqan3::detail::minstrobe_view(v1, 2, 8)));
-    auto v2 = text3 | gapped_kmer_view;
-    EXPECT_RANGE_EQ(result3_distance, (seqan3::detail::minstrobe_view(v2, 2, 8)));
 }
 
 TEST_F(minstrobe_test, combinability)
@@ -149,17 +134,4 @@ TEST_F(minstrobe_test, combinability)
     auto stop_at_t = std::views::take_while([] (seqan3::dna4 const x) { return x != 'T'_dna4; });
     EXPECT_RANGE_EQ(result3_ungapped_stop, text3 | stop_at_t | kmer_view | minstrobe_view);
     EXPECT_RANGE_EQ(result3_gapped_stop, text3 | stop_at_t | gapped_kmer_view | minstrobe_view);
-
-    auto v1 = text3 | stop_at_t | kmer_view;
-    auto v2 = text3 | stop_at_t | kmer_view;
-    EXPECT_RANGE_EQ(result3_distance_stop, (seqan3::detail::minstrobe_view(v1, 2,8)));
-    EXPECT_RANGE_EQ(result3_distance_stop, (seqan3::detail::minstrobe_view(v2, 2,8)));
-
-    auto start_at_a = std::views::drop(6);
-    EXPECT_RANGE_EQ(result3_ungapped_start, (seqan3::detail::minstrobe_view{text3 | start_at_a | kmer_view, 2,8}));
-
-    auto v3 = text3 | start_at_a | kmer_view;
-    auto v4 = text3 | start_at_a | gapped_kmer_view;
-    EXPECT_RANGE_EQ(result3_distance_start, (seqan3::detail::minstrobe_view(v3, 2,8)));
-    EXPECT_RANGE_EQ(result3_distance_start, (seqan3::detail::minstrobe_view(v4, 2,8)));
 }
