@@ -25,7 +25,7 @@ using kmer_result_t = std::vector<size_t>;
 inline static constexpr auto kmer_view = seqan3::views::kmer_hash(seqan3::ungapped{4});
 inline static constexpr auto gapped_kmer_view = seqan3::views::kmer_hash(0b1001_shape);
 
-inline static constexpr auto minstrobe_view = minstrobe(2,5);
+inline static constexpr auto minstrobe_view = seqan3::views::minstrobe(2,5);
 
 using iterator_type = std::ranges::iterator_t< decltype(std::declval<seqan3::dna4_vector&>()
                                                | kmer_view
