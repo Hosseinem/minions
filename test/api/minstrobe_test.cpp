@@ -19,8 +19,7 @@
 
 using seqan3::operator""_dna4;
 using seqan3::operator""_shape;
-using minstrobe_result_t = std::vector<std::tuple<size_t, size_t>>;
-using kmer_result_t = std::vector<size_t>;
+using result_t = std::vector<std::tuple<size_t, size_t>>;
 
 inline static constexpr auto kmer_view = seqan3::views::kmer_hash(seqan3::ungapped{4});
 inline static constexpr auto gapped_kmer_view = seqan3::views::kmer_hash(0b1001_shape);
@@ -39,10 +38,10 @@ struct iterator_fixture<iterator_type> : public ::testing::Test
 
     seqan3::dna4_vector text{"ACGGCGACGTTTAG"_dna4};
     decltype(seqan3::views::kmer_hash(text, seqan3::ungapped{4})) vec = text | kmer_view;
-    kmer_result_t expected_range{(26,27),(105,27),(166,27)};
+    result_t expected_range{(26,27),(105,27),(166,27)};
 
-    decltype(minstrobe(seqan3::views::kmer_hash(text, seqan3::ungapped{4}), 2, 5)) test_range =
-    minstrobe(vec, 2, 5);
+    decltype(seqan3::views::minstrobe(seqan3::views::kmer_hash(text, seqan3::ungapped{4}), 2, 5)) test_range =
+    seqan3::views::minstrobe(vec, 2, 5);
 };
 
 using test_types = ::testing::Types<iterator_type>;
