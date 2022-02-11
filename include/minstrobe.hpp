@@ -14,7 +14,6 @@
 
 #include <seqan3/std/algorithm>
 #include <deque>
-#include <tuple>
 
 #include <seqan3/core/detail/empty_type.hpp>
 #include <seqan3/core/range/detail/adaptor_from_functor.hpp>
@@ -190,7 +189,7 @@ public:
     //!\brief Value type of this iterator.
     using value_t = std::ranges::range_value_t<urng1_t>;
     //!\brief Value type of the output.
-    using value_type = std::tuple<value_t, value_t>;
+    using value_type = std::vector<value_t>;
     //!\brief The pointer type.
     using pointer = void;
     //!\brief Reference to `value_type`.
@@ -242,6 +241,10 @@ public:
         second_iterator{std::move(second_iterator)},
         urng1_sentinel{std::move(urng1_sentinel)}
     {
+        size_t size = std::ranges::distance(second_iterator, urng1_sentinel);
+        if (window_max - window_min > size)
+            throw std::invalid_argument{"The given sequence is too short to satisfy the given parameters.\n"
+                                        "Please choose a smaller window min and max."};
         window_first(window_min, window_max);
     }
     //!\}
@@ -356,7 +359,7 @@ private:
         window_values.push_back(*second_iterator);
 
         auto minstrobe_it = std::ranges::min_element(window_values, std::less_equal<value_t>{});
-        minstrobe_value = std::make_tuple(*first_iterator, *minstrobe_it);
+        minstrobe_value = {*first_iterator, *minstrobe_it};
         minstrobe_position_offset = std::distance(std::begin(window_values), minstrobe_it);
 
     }
@@ -374,23 +377,23 @@ private:
         value_t const new_value = *first_iterator;
         value_t const sw_new_value = *second_iterator;
 
-        std::get<0>(minstrobe_value) = new_value;
+        minstrobe_value[0]= new_value;
 
         window_values.pop_front();
         window_values.push_back(sw_new_value);
-
-        if (minstrobe_position_offset == 0)
+        
+        if (sw_new_value < minstrobe_value[1])
         {
-            auto minstrobe_it = std::ranges::min_element(window_values, std::less_equal<value_t>{});
-            std::get<1>(minstrobe_value) = *minstrobe_it;
-            minstrobe_position_offset = std::distance(std::begin(window_values), minstrobe_it);
+            minstrobe_value[1] = sw_new_value;
+            minstrobe_position_offset = window_values.size() - 1;
             return;
         }
-
-        if (sw_new_value < std::get<1>(minstrobe_value))
+        
+        else if (minstrobe_position_offset == 0)
         {
-            std::get<1>(minstrobe_value) = sw_new_value;
-            minstrobe_position_offset = window_values.size() - 1;
+            auto minstrobe_it = std::ranges::min_element(window_values, std::less_equal<value_t>{});
+            minstrobe_value[1] = *minstrobe_it;
+            minstrobe_position_offset = std::distance(std::begin(window_values), minstrobe_it);
             return;
         }
 
