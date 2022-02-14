@@ -77,7 +77,7 @@ TEST_F(cli_test, wrong_method)
     std::string expected
     {
         "Error. Incorrect command line input for speed. Validation failed "
-        "for option --method: Value submer is not one of [kmer,minimiser,modmer,strobemer].\n"
+        "for option --method: Value submer is not one of [kmer,minimiser,modmer,strobemer,minstrobe,syncmer].\n"
     };
     EXPECT_EQ(result.exit_code, 0);
     EXPECT_EQ(result.out, std::string{});
