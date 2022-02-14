@@ -67,10 +67,21 @@ protected:
     result_t result1{{0,0},{0,0},{0,0},{0,0}}; // Same result for ungapped and gapped
 
     std::vector<seqan3::dna4> text3{"ACGGCGACGTTTAG"_dna4};
-    result_t result3_ungapped{{26,97},{105,27},{166,27},{152,27},{97,27},{134,111}}; // ACGG, GGCG, GCGA, GACG, TTTA, TTAG
-    result_t result3_gapped{{2,5},{5,3},{10,3},{8,3},{5,3},{10,7}};      // A--G, G--G, G--A, G--G, T--A, T--G "-" for gap
-    result_t result3_ungapped_stop{{26,97}}; // ACGG, GGCG, GCGA, GACG
+    //                          kmers: ACGG,     CGGC,     GGCG,     GCGA,     CGAC,     GACG,     ACGT, CGTT, GTTT, TTTA, TTAG
+    //                ungapped Hashes: 26,       105,      166,      152,      97,       134,      27,   111,  191,  252,  242
+    //                  gapped Hashes: 2,        5,        10,       8,        5,        10,       3,    7,    11,   12,   14
+    //            ungapped minstrobes: ACGGCGAC, CGGCACGT, GGCGACGT, GCGAACGT, CGACACGT, GACGCGTT
+    //              gapped minstrobes: A--GC--C, C--CA--T, G--GA--T, G--AA--T, C--CA--T, G--GC--T
+    //  stop at T ungapped minstrobes: ACGGCGAC
+    //    stop at T gapped minstrobes: A--GC--C
+    // start at A ungapped minstrobes:                               GCGAACGT, CGACACGT, GACGCGTT
+    //   start at A gapped minstrobes:                               G--AA--T, C--CA--T, G--GC--T
+    result_t result3_ungapped{{26,97},{105,27},{166,27},{152,27},{97,27},{134,111}};
+    result_t result3_gapped{{2,5},{5,3},{10,3},{8,3},{5,3},{10,7}};
+    result_t result3_ungapped_stop{{26,97}};
     result_t result3_gapped_stop{{2,5}};
+    result_t result3_ungapped_start{{152,27},{97,27},{134,111}};
+    result_t result3_gapped_start{{8,3},{5,3},{10,7}};
 };
 
 template <typename adaptor_t>
@@ -99,9 +110,9 @@ TYPED_TEST(minstrobe_view_properties_test, concepts)
 TYPED_TEST(minstrobe_view_properties_test, different_inputs_kmer_hash)
 {
     TypeParam text{'A'_dna4, 'C'_dna4, 'G'_dna4, 'T'_dna4, 'C'_dna4, 'G'_dna4, 'A'_dna4, 'C'_dna4, 'G'_dna4, 'T'_dna4,
-                'T'_dna4, 'T'_dna4, 'A'_dna4, 'G'_dna4}; // ACGTCGACGTTTAG
-    result_t ungapped{{27,97},{109,27},{182,27},{216,27},{97,27},{134,111}};      // GTCG, TCGA, GACG, TTTA, TTAG
-    result_t gapped{{3,5},{5,3},{10,3},{12,3},{5,3},{10,7}};             // G--G, T--G, T--A, G--G, T--A, T--G "-" for gap
+                   'T'_dna4, 'T'_dna4, 'A'_dna4, 'G'_dna4}; // ACGTCGACGTTTAG
+    result_t ungapped{{27,97},{109,27},{182,27},{216,27},{97,27},{134,111}};
+    result_t gapped{{3,5},{5,3},{10,3},{12,3},{5,3},{10,7}};
     EXPECT_RANGE_EQ(ungapped, text | kmer_view | minstrobe_view);
     EXPECT_RANGE_EQ(gapped, text | gapped_kmer_view | minstrobe_view);
 }
@@ -116,11 +127,14 @@ TEST_F(minstrobe_test, gapped_kmer_hash)
 {
     EXPECT_RANGE_EQ(result1, text1 | gapped_kmer_view | minstrobe_view);
     EXPECT_RANGE_EQ(result3_gapped, text3 | gapped_kmer_view | minstrobe_view);
-
 }
 
 TEST_F(minstrobe_test, combinability)
 {
+    auto start_at_a = std::views::drop(3);
+    EXPECT_RANGE_EQ(result3_ungapped_start, text3 | start_at_a | kmer_view | minstrobe_view);
+    EXPECT_RANGE_EQ(result3_gapped_start, text3 | start_at_a | gapped_kmer_view | minstrobe_view);
+
     auto stop_at_t = std::views::take_while([] (seqan3::dna4 const x) { return x != 'T'_dna4; });
     EXPECT_RANGE_EQ(result3_ungapped_stop, text3 | stop_at_t | kmer_view | minstrobe_view);
     EXPECT_RANGE_EQ(result3_gapped_stop, text3 | stop_at_t | gapped_kmer_view | minstrobe_view);
